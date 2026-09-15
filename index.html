@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Hire Worker Finder System</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    /* ================= CSS STYLES ================= */
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-light: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-main);
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .role-switcher span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-right: 0.5rem;
+    }
+
+    .role-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      margin-left: 0.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .role-btn.active, .role-btn:hover {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Container & Sections */
+    .container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    .header-title {
+      margin-bottom: 1.5rem;
+    }
+
+    .header-title h2 {
+      font-size: 1.8rem;
+      color: var(--text-main);
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+    }
+
+    /* Search and Filters */
+    .filter-card {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-card input, .filter-card select {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    .filter-card input { flex: 1; }
+
+    /* Grid Cards (User View) */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .worker-title { font-weight: bold; font-size: 1.2rem; }
+    .worker-skill { color: var(--text-muted); font-size: 0.9rem; }
+    .rating { color: #f59e0b; font-size: 0.9rem; margin-top: 0.25rem; }
+
+    .card-details {
+      margin: 1rem 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Badges & Buttons */
+    .badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-success { background: #dcfce7; color: var(--success); }
+    .badge-danger { background: #fee2e2; color: var(--danger); }
+    .badge-warning { background: #fef3c7; color: var(--warning); }
+
+    .btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    /* Worker View Elements */
+    .dashboard-banner {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .dashboard-banner select {
+      padding: 0.4rem;
+      font-size: 1rem;
+    }
+
+    .requests-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .request-card {
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 8px;
+      border-left: 5px solid var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Admin Dashboard Styles */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-card h3 { font-size: 2rem; color: var(--primary); }
+    .stat-card p { color: var(--text-muted); }
+
+    .admin-tables {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .table-card {
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .table-card h3 { margin-bottom: 1rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    table th, table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    table th { background: var(--bg-light); }
+
+    /* Modal Window */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 450px;
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 1rem; right: 1.2rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Role Switcher -->
+  <header class="navbar">
+    <div class="logo">
+      <i class="fa-solid fa-briefcase"></i> SmartHire
+    </div>
+    <div class="role-switcher">
+      <span>Select Role: </span>
+      <button class="role-btn active" onclick="switchRole('user', event)"><i class="fa-solid fa-user"></i> User Panel</button>
+      <button class="role-btn" onclick="switchRole('worker', event)"><i class="fa-solid fa-helmet-safety"></i> Worker Panel</button>
+      <button class="role-btn" onclick="switchRole('admin', event)"><i class="fa-solid fa-user-gear"></i> Admin Panel</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ================= USER VIEW ================= -->
+    <section id="user-view" class="view-section active">
+      <div class="header-title">
+        <h2>Find & Hire Skilled Workers</h2>
+        <p>Browse top-rated local professionals and send direct work requests.</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-card">
+        <input type="text" id="user-search" placeholder="Search by name or skill..." oninput="renderUserWorkers()">
+        <select id="user-category" onchange="renderUserWorkers()">
+          <option value="All">All Categories</option>
+          <option value="Electrician">Electrician</option>
+          <option value="Plumber">Plumber</option>
+          <option value="Carpenter">Carpenter</option>
+          <option value="Painter">Painter</option>
+        </select>
+      </div>
+
+      <!-- Worker Cards Grid -->
+      <div id="worker-grid" class="grid"></div>
+
+      <!-- Hire Request Modal -->
+      <div id="hire-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeHireModal()">&times;</span>
+          <h3 id="modal-worker-name">Send Work Request</h3>
+          <form id="hire-form" onsubmit="submitHireRequest(event)">
+            <input type="hidden" id="modal-worker-id">
+            <div class="form-group">
+              <label>Your Name</label>
+              <input type="text" id="req-user-name" required placeholder="John Doe">
+            </div>
+            <div class="form-group">
+              <label>Work Description / Requirements</label>
+              <textarea id="req-details" rows="3" required placeholder="Describe the job in detail..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Service Date</label>
+              <input type="date" id="req-date" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Job Request</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WORKER VIEW ================= -->
+    <section id="worker-view" class="view-section">
+      <div class="header-title">
+        <h2>Worker Dashboard</h2>
+        <p>Manage incoming work requests and update availability.</p>
+      </div>
+
+      <div class="dashboard-banner">
+        <div>
+          <h3>Log-in Profile: <select id="worker-selector" onchange="changeWorkerProfile()"></select></h3>
+          <p id="worker-status-text">Status: <span class="badge badge-success">Available</span></p>
+        </div>
+        <button class="btn btn-secondary" onclick="toggleWorkerStatus()">Toggle Availability</button>
+      </div>
+
+      <h3>Incoming Work Requests</h3>
+      <div id="worker-requests-list" class="requests-list"></div>
+    </section>
+
+    <!-- ================= ADMIN VIEW ================= -->
+    <section id="admin-view" class="view-section">
+      <div class="header-title">
+        <h2>Admin Management Dashboard</h2>
+        <p>System overview, worker management, and booking logs.</p>
+      </div>
+
+      <!-- Admin Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="stat-total-workers">0</h3>
+          <p>Total Workers</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-total-requests">0</h3>
+          <p>Total Requests</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-accepted-requests">0</h3>
+          <p>Completed / Accepted</p>
+        </div>
+      </div>
+
+      <!-- Admin Tables -->
+      <div class="admin-tables">
+        <div class="table-card">
+          <h3>Manage Registered Workers</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Rate ($/hr)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-worker-table"></tbody>
+          </table>
+        </div>
+
+        <div class="table-card">
+          <h3>All Platform Bookings</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Req ID</th>
+                <th>User</th>
+                <th>Worker</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-booking-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // Initial Mock Data
+    let workers = [
+      { id: 1, name: "Alex Johnson", category: "Electrician", rate: 25, rating: 4.8, isAvailable: true, location: "New York" },
+      { id: 2, name: "Maria Garcia", category: "Plumber", rate: 30, rating: 4.9, isAvailable: true, location: "Brooklyn" },
+      { id: 3, name: "David Smith", category: "Carpenter", rate: 22, rating: 4.5, isAvailable: false, location: "Queens" },
+      { id: 4, name: "Sarah Lee", category: "Painter", rate: 20, rating: 4.7, isAvailable: true, location: "Manhattan" }
+    ];
+
+    let requests = [
+      { id: 101, workerId: 1, userName: "John Doe", details: "Fix living room wiring and switchboard.", date: "2026-09-20", status: "Pending" },
+      { id: 102, workerId: 2, userName: "Alice Brown", details: "Kitchen pipe leakage repair.", date: "2026-09-18", status: "Accepted" }
+    ];
+
+    let currentWorkerId = 1; // Default logged-in worker
+
+    // Document Ready Initialization
+    document.addEventListener("DOMContentLoaded", () => {
+      renderUserWorkers();
+      populateWorkerDropdown();
+      renderWorkerDashboard();
+      renderAdminDashboard();
+    });
+
+    // Role Switcher Navigation
+    function switchRole(role, event) {
+      document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById(`${role}-view`).classList.add('active');
+
+      if (role === 'admin') renderAdminDashboard();
+      if (role === 'worker') renderWorkerDashboard();
+    }
+
+    /* ================= USER FUNCTIONS ================= */
+    function renderUserWorkers() {
+      const search = document.getElementById('user-search').value.toLowerCase();
+      const category = document.getElementById('user-category').value;
+      const grid = document.getElementById('worker-grid');
+
+      grid.innerHTML = "";
+
+      const filtered = workers.filter(w => {
+        const matchesSearch = w.name.toLowerCase().includes(search) || w.category.toLowerCase().includes(search);
+        const matchesCategory = category === "All" || w.category === category;
+        return matchesSearch && matchesCategory;
+      });
+
+      filtered.forEach(w => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div>
+            <div class="card-header">
+              <div>
+                <div class="worker-title">${w.name}</div>
+                <div class="worker-skill">${w.category}</div>
+              </div>
+              <span class="badge ${w.isAvailable ? 'badge-success' : 'badge-danger'}">
+                ${w.isAvailable ? 'Available' : 'Busy'}
+              </span>
+            </div>
+            <div class="card-details">
+              <p><i class="fa-solid fa-location-dot"></i> ${w.location}</p>
+              <p><i class="fa-solid fa-tag"></i> $${w.rate}/hr</p>
+              <div class="rating"><i class="fa-solid fa-star"></i> ${w.rating} / 5.0</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" 
+            onclick="openHireModal(${w.id}, '${w.name}')" 
+            ${!w.isAvailable ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+            ${w.isAvailable ? 'Hire Now' : 'Currently Unavailable'}
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openHireModal(workerId, workerName) {
+      document.getElementById('modal-worker-id').value = workerId;
+      document.getElementById('modal-worker-name').innerText = `Send Work Request to ${workerName}`;
+      document.getElementById('hire-modal').style.display = 'flex';
+    }
+
+    function closeHireModal() {
+      document.getElementById('hire-modal').style.display = 'none';
+    }
+
+    function submitHireRequest(e) {
+      e.preventDefault();
+      const workerId = parseInt(document.getElementById('modal-worker-id').value);
+      const userName = document.getElementById('req-user-name').value;
+      const details = document.getElementById('req-details').value;
+      const date = document.getElementById('req-date').value;
+
+      const newRequest = {
+        id: Date.now(),
+        workerId,
+        userName,
+        details,
+        date,
+        status: "Pending"
+      };
+
+      requests.push(newRequest);
+      alert("Work request sent successfully!");
+      closeHireModal();
+      document.getElementById('hire-form').reset();
+    }
+
+    /* ================= WORKER FUNCTIONS ================= */
+    function populateWorkerDropdown() {
+      const select = document.getElementById('worker-selector');
+      select.innerHTML = "";
+      workers.forEach(w => {
+        select.innerHTML += `<option value="${w.id}">${w.name} (${w.category})</option>`;
+      });
+      select.value = currentWorkerId;
+    }
+
+    function changeWorkerProfile() {
+      currentWorkerId = parseInt(document.getElementById('worker-selector').value);
+      renderWorkerDashboard();
+    }
+
+    function toggleWorkerStatus() {
+      const current = workers.find(w => w.id === currentWorkerId);
+      if (current) {
+        current.isAvailable = !current.isAvailable;
+        renderWorkerDashboard();
+        renderUserWorkers();
+      }
+    }
+
+    function renderWorkerDashboard() {
+      const current = workers.find(w => w.id === currentWorkerId);
+      const statusText = document.getElementById('worker-status-text');
+      
+      if (current) {
+        statusText.innerHTML = `Status: <span class="badge ${current.isAvailable ? 'badge-success' : 'badge-danger'}">
+          ${current.isAvailable ? 'Available' : 'Busy/Unavailable'}
+        </span>`;
+      }
+
+      const list = document.getElementById('worker-requests-list');
+      list.innerHTML = "";
+
+      const myRequests = requests.filter(r => r.workerId === currentWorkerId);
+
+      if (myRequests.length === 0) {
+        list.innerHTML = `<p style="color:var(--text-muted)">No request received yet.</p>`;
+        return;
+      }
+
+      myRequests.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'request-card';
+        card.innerHTML = `
+          <div>
+            <h4>Client: ${r.userName}</h4>
+            <p><strong>Work:</strong> ${r.details}</p>
+            <p><small><strong>Requested Date:</strong> ${r.date}</small></p>
+            <p>Status: <span class="badge badge-warning">${r.status}</span></p>
+          </div>
+          ${r.status === 'Pending' ? `
+            <div class="request-actions">
+              <button class="btn btn-success" onclick="updateRequestStatus(${r.id}, 'Accepted')">Accept</button>
+              <button class="btn btn-danger" onclick="updateRequestStatus(${r.id}, 'Rejected')">Reject</button>
+            </div>
+          ` : ''}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function updateRequestStatus(reqId, newStatus) {
+      const req = requests.find(r => r.id === reqId);
+      if (req) {
+        req.status = newStatus;
+        renderWorkerDashboard();
+      }
+    }
+
+    /* ================= ADMIN FUNCTIONS ================= */
+    function renderAdminDashboard() {
+      // Update Statistics
+      document.getElementById('stat-total-workers').innerText = workers.length;
+      document.getElementById('stat-total-requests').innerText = requests.length;
+      document.getElementById('stat-accepted-requests').innerText = requests.filter(r => r.status === 'Accepted').length;
+
+      // Render Worker Table
+      const workerTable = document.getElementById('admin-worker-table');
+      workerTable.innerHTML = "";
+      workers.forEach(w => {
+        workerTable.innerHTML += `
+          <tr>
+            <td>#${w.id}</td>
+            <td>${w.name}</td>
+            <td>${w.category}</td>
+            <td>$${w.rate}</td>
+            <td><button class="btn btn-danger" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="deleteWorker(${w.id})">Remove</button></td>
+          </tr>
+        `;
+      });
+
+      // Render Bookings Table
+      const bookingTable = document.getElementById('admin-booking-table');
+      bookingTable.innerHTML = "";
+      requests.forEach(r => {
+        const assignedWorker = workers.find(w => w.id === r.workerId);
+        bookingTable.innerHTML += `
+          <tr>
+            <td>#${r.id}</td>
+            <td>${r.userName}</td>
+            <td>${assignedWorker ? assignedWorker.name : 'Unknown'}</td>
+            <td>${r.date}</td>
+            <td><span class="badge ${r.status === 'Accepted' ? 'badge-success' : r.status === 'Rejected' ? 'badge-danger' : 'badge-warning'}">${r.status}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    function deleteWorker(id) {
+      workers = workers.filter(w => w.id !== id);
+      populateWorkerDropdown();
+      renderAdminDashboard();
+      renderUserWorkers();
+    }
+  </script>
+</body>
+</html>
